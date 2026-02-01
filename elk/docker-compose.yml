@@ -74,8 +74,8 @@ services:
     environment:
       - LS_JAVA_OPTS=-Xmx256m -Xms256m
     volumes:
-      - ./logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-      - ./logstash/plugins:/usr/share/logstash/plugins
+      - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
     ports:
       - "5044:5044"
     networks:

@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.3
+    volumes:
+      - ./pipeline/:/usr/share/logstash/pipeline/
+      - ./drivers/:/usr/share/logstash/drivers/
+      - /home/shrikar/Bank/elevens-bank:/logs
+    network_mode: "host"
+    environment:
+      - LS_JAVA_OPTS=-Xms192m -Xmx192m
+      - XPACK_MONITORING_ENABLED=false
+    deploy:
+      resources:
+        limits:
+          cpus: "0.8"
+          memory: 512m
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=StrongP@ssw0rd!
+    ports:
+      - "1433:1433"
