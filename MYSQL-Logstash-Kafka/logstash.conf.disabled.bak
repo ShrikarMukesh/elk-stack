@@ -1,0 +1,50 @@
+input {
+  file {
+    path => "/logs/logs/*.log"
+    start_position => "beginning"
+    sincedb_path => "/dev/null"
+    mode => "read"
+    file_completed_action => "log"
+    file_completed_log_path => "/dev/null"
+    codec => "json"  # ← YOUR LOGS ARE JSON FORMAT!
+  }
+}
+
+filter {
+  # Extract service name from filename
+  grok {
+    match => {
+      "path" => "/logs/logs/(?<service_name>[^.]+).*\.log"
+    }
+  }
+
+  # Your logs already have @timestamp from JSON, ensure it's parsed correctly
+  if [@timestamp] {
+    date {
+      match => ["@timestamp", "ISO8601"]
+      target => "@timestamp"
+    }
+  }
+
+  # Add environment tag
+  mutate {
+    add_field => { "environment" => "local" }
+  }
+
+  # Rename fields for clarity (your JSON logs have these fields)
+  mutate {
+    rename => {
+      "message" => "log_message"
+      "logger_name" => "logger"
+      "thread_name" => "thread"
+    }
+  }
+}
+
+output {
+  elasticsearch {
+    hosts => ["http://elasticsearch:9200"]
+    index => "elevens-bank-logs-%{service_name}-%{+YYYY.MM.dd}"
+  }
+  stdout { codec => rubydebug }
+}
